@@ -1,0 +1,49 @@
+import { useEffect, useMemo, useState } from "react";
+import { useThree } from "react-three-fiber";
+import { Group } from "three";
+
+
+type HandGroup = Group & { joints: Record<string, Group>};
+
+interface HandSideSelector {
+    handedness: 'right' | 'left';
+}
+
+interface HandIndexSelector {
+    index: number;
+}
+
+
+
+export function useHandState(index: 0 | 1) {
+    const { scene, gl } = useThree();
+    const inputHand = useMemo<HandGroup>(() => gl.xr.getHand(index) as HandGroup, [scene, gl]);
+    const [handedness, setHandedness] = useState<'left' | 'right'>();
+    
+    useEffect(() => {
+        function handleConnected({data}: any) {
+            setHandedness(data.handedness);
+            inputHand.visible = true;
+            console.log('Connected:');
+            console.log(data);
+        }
+
+        function handleDisconnected({data}: any) {
+            console.log('Disconnected');
+            console.log(data);
+        }
+
+        inputHand?.addEventListener('connected', handleConnected);
+        inputHand?.addEventListener('disconnected', handleDisconnected);
+
+        return () => {
+            inputHand?.removeEventListener('connected', handleConnected);
+            inputHand?.removeEventListener('disconnected', handleDisconnected);
+        };
+    }, [inputHand]);
+
+    return {
+        inputGroup: inputHand,
+        handedness
+    };
+}
