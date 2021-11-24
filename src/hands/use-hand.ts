@@ -16,8 +16,8 @@ interface HandIndexSelector {
 
 
 export function useHandState(index: 0 | 1) {
-    const { scene, gl } = useThree();
-    const inputHand = useMemo<HandGroup>(() => gl.xr.getHand(index) as HandGroup, [scene, gl]);
+    const { gl } = useThree();
+    const inputHand = useMemo<HandGroup>(() => gl.xr.getHand(index) as HandGroup, [gl, index]);
     const [handedness, setHandedness] = useState<'left' | 'right'>();
     
     useEffect(() => {
@@ -29,6 +29,7 @@ export function useHandState(index: 0 | 1) {
         }
 
         function handleDisconnected({data}: any) {
+            inputHand.visible = false;
             console.log('Disconnected');
             console.log(data);
         }

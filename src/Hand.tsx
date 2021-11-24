@@ -16,13 +16,14 @@ export const Hand: React.FC<HandProps> = ({
     const { inputGroup, handedness } = useHandState(index);
 
     return (
-        <group position={[0, 0, 0]}>
+        <group position={[0, 0, 0]} name={`hand-${index}-root`}>
             <Suspense fallback={null}>
                 {
                     handedness &&
                         <OculusHandModel
                             handedness={handedness}
                             inputJoints={inputGroup?.joints}
+                            visible={true}
                         >
                             {children}
                         </OculusHandModel>
