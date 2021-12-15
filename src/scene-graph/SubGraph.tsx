@@ -1,6 +1,7 @@
-import * as React from 'react';
+import { useContext, useEffect } from 'react';
 import { createPortal } from 'react-three-fiber';
 import { Object3D } from 'three';
+
 import { NodeSelector, useNodeSelector } from './use-selector';
 import { SceneGraphContext } from './SceneGraphContext';
 
@@ -14,17 +15,15 @@ export const SubGraph: React.FC<SubGraphProps> = ({
     transform,
     children
 }) => {
-    const { root } = React.useContext(SceneGraphContext);
+    const root = useContext(SceneGraphContext);
     const object = useNodeSelector(root, selector);
 
-    React.useEffect(() => {
-        if(object && transform) {
-            transform(object);
-        }
+    useEffect(() => {
+        if(object) transform?.(object);
     }, [object, transform]);
 
     return object ? (
-        <SceneGraphContext.Provider value={{root: object}}>
+        <SceneGraphContext.Provider value={object}>
             {createPortal(children, object)}
         </SceneGraphContext.Provider>
     ) : null;

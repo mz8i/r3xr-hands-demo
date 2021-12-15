@@ -1,6 +1,5 @@
 import { useGLTF } from '@react-three/drei';
 import React, { useEffect } from 'react';
-import { useThree } from 'react-three-fiber';
 
 import { NodeSelector, useNodeSelector } from './scene-graph/use-selector';
 import { SceneGraphContext } from './scene-graph/SceneGraphContext';
@@ -18,25 +17,16 @@ export const ModelGLTF: React.FC<ModelGLTFProps> = ({
     transform,
     children
 }) => {
-    const { scene: mainScene } = useThree();
-    const { scene: originalModelScene } = useGLTF(modelUrl);
-    const modelScene = React.useMemo(() => originalModelScene, [originalModelScene]);
+    const { scene: modelScene } = useGLTF(modelUrl);
 
     const object = useNodeSelector(modelScene, selector);
     useEffect(() => {
-        if(object && transform) transform(object);
+        if(object) transform?.(object);
     }, [object, transform]);
-    
-    useEffect(() => {
-        setTimeout(() => {
-            console.log('Model scene:', originalModelScene)
-            console.log('Main scene:', mainScene)
-        }, 2000);
-    }, [originalModelScene, mainScene]);
 
     return object ? (<>
         <primitive object={object} dispose={null}/>
-        <SceneGraphContext.Provider value={{root: object}}>
+        <SceneGraphContext.Provider value={object}>
             {children}
         </SceneGraphContext.Provider>
     </>) : null;
