@@ -4,6 +4,20 @@ import { VRCanvas } from '@react-three/xr';
 import { Hand } from './Hand';
 import { Box, MeshDistortMaterial, MeshWobbleMaterial, Stars } from '@react-three/drei';
 import { SubGraph } from './scene-graph/SubGraph';
+import { FC } from 'react';
+
+const CustomSkinnedMesh : FC<{}> = ({children}) => {
+  return <SubGraph
+    selector={r => r?.getObjectByProperty('type', 'SkinnedMesh')} 
+    transform={o => {
+      o.frustumCulled = false
+      o.castShadow = true;
+      o.receiveShadow = true;
+    }
+  }>
+    {children}
+  </SubGraph>
+}
 
 function App() {
   return (
@@ -13,24 +27,14 @@ function App() {
           <Stars/>
 
           <Hand index={0}>
-            <SubGraph selector={r => r?.getObjectByProperty('type', 'SkinnedMesh')} transform={o => {
-              o.frustumCulled = false
-              o.castShadow = true;
-              o.receiveShadow = true;
-            }}>
-              {/* <meshPhongMaterial color='blue' skinning={true}/> */}
-              <MeshWobbleMaterial color='blue' skinning={true} speed={20} factor={0.5}/>
-            </SubGraph>
+            <CustomSkinnedMesh>
+              <MeshDistortMaterial color='blue' skinning={true} speed={0.9} distort={0.7}/>
+            </CustomSkinnedMesh>
           </Hand>
           <Hand index={1}>
-            <SubGraph selector={r => r?.getObjectByProperty('type', 'SkinnedMesh')} transform={o => {
-              o.frustumCulled = false;
-              o.castShadow = true;
-              o.receiveShadow = true;
-            }}>
-              {/* <meshPhongMaterial color='red' skinning={true}/> */}
-              <MeshDistortMaterial color='red' skinning={true} speed={0.4} distort={1}/>
-            </SubGraph>
+            <CustomSkinnedMesh>
+              <MeshDistortMaterial color='red' skinning={true} speed={0.4} distort={0.95}/>
+            </CustomSkinnedMesh>
           </Hand>
 
           <ambientLight name="main-ambient-light" intensity={0.3} />
