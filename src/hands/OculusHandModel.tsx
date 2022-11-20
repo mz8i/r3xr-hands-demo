@@ -1,83 +1,91 @@
-import { useRef } from "react";
-import { Group, SkinnedMesh, XRHandJoint } from "three";
-import { useFrame } from "react-three-fiber";
-import { OculusHandLeft } from "./OculusHandLeft";
-import { OculusHandRight } from "./OculusHandRight";
+import { useRef } from 'react';
+import { useFrame } from 'react-three-fiber';
+import { Group, SkinnedMesh, XRHandJoint } from 'three';
+
+import { OculusHandLeft } from './OculusHandLeft';
+import { OculusHandRight } from './OculusHandRight';
 
 type HandJointKey = keyof typeof XRHandJoint;
 
 const jointNames: HandJointKey[] = [
-    'wrist',                              
-'thumb-metacarpal',                   
-'thumb-phalanx-proximal',             
-'thumb-phalanx-distal',               
-'thumb-tip',                          
-'index-finger-metacarpal',            
-'index-finger-phalanx-proximal',      
-'index-finger-phalanx-intermediate',  
-'index-finger-phalanx-distal',        
-'index-finger-tip',                   
-'middle-finger-metacarpal',           
-'middle-finger-phalanx-proximal',     
-'middle-finger-phalanx-intermediate', 
-'middle-finger-phalanx-distal',       
-'middle-finger-tip',                  
-'ring-finger-metacarpal',             
-'ring-finger-phalanx-proximal',       
-'ring-finger-phalanx-intermediate',   
-'ring-finger-phalanx-distal',         
-'ring-finger-tip',                    
-'pinky-finger-metacarpal',            
-'pinky-finger-phalanx-proximal',      
-'pinky-finger-phalanx-intermediate',  
-'pinky-finger-phalanx-distal',        
-'pinky-finger-tip',                   
+  'wrist',
+  'thumb-metacarpal',
+  'thumb-phalanx-proximal',
+  'thumb-phalanx-distal',
+  'thumb-tip',
+  'index-finger-metacarpal',
+  'index-finger-phalanx-proximal',
+  'index-finger-phalanx-intermediate',
+  'index-finger-phalanx-distal',
+  'index-finger-tip',
+  'middle-finger-metacarpal',
+  'middle-finger-phalanx-proximal',
+  'middle-finger-phalanx-intermediate',
+  'middle-finger-phalanx-distal',
+  'middle-finger-tip',
+  'ring-finger-metacarpal',
+  'ring-finger-phalanx-proximal',
+  'ring-finger-phalanx-intermediate',
+  'ring-finger-phalanx-distal',
+  'ring-finger-tip',
+  'pinky-finger-metacarpal',
+  'pinky-finger-phalanx-proximal',
+  'pinky-finger-phalanx-intermediate',
+  'pinky-finger-phalanx-distal',
+  'pinky-finger-tip',
 ];
 
 function getSkeletonFromGroup(g: Group | null) {
-    const armature = g?.children[0];
-    const skinnedMesh = armature?.getObjectByProperty('type', 'SkinnedMesh') as SkinnedMesh;
-    return skinnedMesh?.skeleton;
+  const armature = g?.children[0];
+  const skinnedMesh = armature?.getObjectByProperty(
+    'type',
+    'SkinnedMesh'
+  ) as SkinnedMesh;
+  return skinnedMesh?.skeleton;
 }
 
 interface OculusHandModelProps {
-    handedness: 'left' | 'right';
-    inputJoints: Record<string, Group> | null;
-    visible?: boolean;
-    material?: React.ReactElement;
+  handedness: 'left' | 'right';
+  inputJoints: Record<string, Group> | null;
+  visible?: boolean;
+  material?: React.ReactElement;
 }
 
 export const OculusHandModel: React.FC<OculusHandModelProps> = ({
-    handedness,
-    inputJoints,
-    visible = true,
-    children
+  handedness,
+  inputJoints,
+  visible = true,
+  children,
 }) => {
-    const groupRef = useRef<Group>(null);
+  const groupRef = useRef<Group>(null);
 
-    const Model = handedness === 'right' ? OculusHandRight : OculusHandLeft;
-    
-    useFrame(() => {
-        if(!inputJoints) return;
+  const Model = handedness === 'right' ? OculusHandRight : OculusHandLeft;
 
-        const skeleton = getSkeletonFromGroup(groupRef.current);
+  useFrame(() => {
+    if (!inputJoints) return;
 
-        if(!skeleton) return;
+    const skeleton = getSkeletonFromGroup(groupRef.current);
 
-        for (const jointName of jointNames) {
-            const bone = skeleton.getBoneByName(jointName);
-            const joint = inputJoints[jointName];
+    if (!skeleton) return;
 
-            if(bone && joint) {
-                bone.position.copy(joint.position);
-                bone.quaternion.copy(joint.quaternion);
-            }
-        }
-    });
+    for (const jointName of jointNames) {
+      const bone = skeleton.getBoneByName(jointName);
+      const joint = inputJoints[jointName];
 
-    return <group ref={groupRef} name={`oculus-hand-${handedness}-motion-controller`} visible={visible}>
-        <Model>
-            {children}
-        </Model>
-    </group>;
+      if (bone && joint) {
+        bone.position.copy(joint.position);
+        bone.quaternion.copy(joint.quaternion);
+      }
+    }
+  });
+
+  return (
+    <group
+      ref={groupRef}
+      name={`oculus-hand-${handedness}-motion-controller`}
+      visible={visible}
+    >
+      <Model>{children}</Model>
+    </group>
+  );
 };

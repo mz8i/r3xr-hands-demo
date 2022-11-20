@@ -1,48 +1,40 @@
-import { useEffect, useMemo, useState } from "react";
-import { useThree } from "react-three-fiber";
-import { Group } from "three";
+import { useEffect, useMemo, useState } from 'react';
+import { useThree } from 'react-three-fiber';
+import { Group } from 'three';
 
-
-type HandGroup = Group & { joints: Record<string, Group>};
-
-interface HandSideSelector {
-    handedness: 'right' | 'left';
-}
-
-interface HandIndexSelector {
-    index: 0 | 1;
-}
-
-
+type HandGroup = Group & { joints: Record<string, Group> };
 
 export function useHandState(index: 0 | 1) {
-    const { gl } = useThree();
-    const inputHand = useMemo<HandGroup>(() => gl.xr.getHand(index) as HandGroup, [gl, index]);
-    const [handedness, setHandedness] = useState<'left' | 'right'>();
-    
-    useEffect(() => {
-        function handleConnected({data}: any) {
-            setHandedness(data.handedness);
-            inputHand.visible = true;
-            console.log('Connected:', data);
-        }
+  const { gl } = useThree();
+  const inputHand = useMemo<HandGroup>(
+    () => gl.xr.getHand(index) as HandGroup,
+    [gl, index]
+  );
+  const [handedness, setHandedness] = useState<'left' | 'right'>();
 
-        function handleDisconnected({data}: any) {
-            inputHand.visible = false;
-            console.log('Disconnected:', data);
-        }
+  useEffect(() => {
+    function handleConnected({ data }: any) {
+      setHandedness(data.handedness);
+      inputHand.visible = true;
+      console.log('Connected:', data);
+    }
 
-        inputHand?.addEventListener('connected', handleConnected);
-        inputHand?.addEventListener('disconnected', handleDisconnected);
+    function handleDisconnected({ data }: any) {
+      inputHand.visible = false;
+      console.log('Disconnected:', data);
+    }
 
-        return () => {
-            inputHand?.removeEventListener('connected', handleConnected);
-            inputHand?.removeEventListener('disconnected', handleDisconnected);
-        };
-    }, [inputHand]);
+    inputHand?.addEventListener('connected', handleConnected);
+    inputHand?.addEventListener('disconnected', handleDisconnected);
 
-    return {
-        inputGroup: inputHand,
-        handedness
+    return () => {
+      inputHand?.removeEventListener('connected', handleConnected);
+      inputHand?.removeEventListener('disconnected', handleDisconnected);
     };
+  }, [inputHand]);
+
+  return {
+    inputGroup: inputHand,
+    handedness,
+  };
 }
