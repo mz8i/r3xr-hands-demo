@@ -5,16 +5,17 @@ import { Hand } from './Hand';
 import { Box, MeshDistortMaterial, MeshWobbleMaterial, Stars } from '@react-three/drei';
 import { SubGraph } from './scene-graph/SubGraph';
 import { FC } from 'react';
+import { SelfTransform } from './scene-graph/SelfTransform';
 
 const CustomSkinnedMesh : FC<{}> = ({children}) => {
   return <SubGraph
     selector={r => r?.getObjectByProperty('type', 'SkinnedMesh')} 
-    transform={o => {
+  >
+    <SelfTransform transform={o => {
       o.frustumCulled = false
       o.castShadow = true;
       o.receiveShadow = true;
-    }
-  }>
+    }} />
     {children}
   </SubGraph>
 }

@@ -10,7 +10,7 @@ interface HandSideSelector {
 }
 
 interface HandIndexSelector {
-    index: number;
+    index: 0 | 1;
 }
 
 
@@ -24,14 +24,12 @@ export function useHandState(index: 0 | 1) {
         function handleConnected({data}: any) {
             setHandedness(data.handedness);
             inputHand.visible = true;
-            console.log('Connected:');
-            console.log(data);
+            console.log('Connected:', data);
         }
 
         function handleDisconnected({data}: any) {
             inputHand.visible = false;
-            console.log('Disconnected');
-            console.log(data);
+            console.log('Disconnected:', data);
         }
 
         inputHand?.addEventListener('connected', handleConnected);
