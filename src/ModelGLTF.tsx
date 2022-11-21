@@ -1,27 +1,43 @@
 import { useGLTF } from '@react-three/drei';
-import React from 'react';
+import { ForwardedRef, ReactNode, forwardRef, useEffect } from 'react';
+import { Object3D } from 'three';
 
 import { GraphAnchor } from './scene-graph/GraphAnchor';
-import { NodeSelector } from './scene-graph/use-node-selector';
+import { NodeSelector, useNodeSelector } from './scene-graph/use-node-selector';
 
 interface ModelGLTFProps {
   modelUrl: string;
   selector?: NodeSelector;
+  subgraphSelector?: NodeSelector;
+  children?: ReactNode;
 }
 
-export const ModelGLTF: React.FC<ModelGLTFProps> = ({
-  modelUrl,
-  selector,
-  children,
-}) => {
-  const { scene: object } = useGLTF(modelUrl);
+function useSetForwardedRef<T>(forwardedRef: ForwardedRef<T>, value: T | null) {
+  useEffect(() => {
+    if (forwardedRef) {
+      if (typeof forwardedRef === 'function') {
+        forwardedRef(value);
+      } else {
+        (forwardedRef as any).current = value;
+      }
+    }
+  }, [forwardedRef, value]);
+}
 
-  return object ? (
-    <>
-      <primitive object={object} dispose={null} />
-      <GraphAnchor root={object} selector={selector}>
-        {children}
-      </GraphAnchor>
-    </>
-  ) : null;
-};
+export const ModelGLTF = forwardRef<Object3D, ModelGLTFProps>(
+  ({ modelUrl, selector, subgraphSelector, children }, ref) => {
+    const { scene } = useGLTF(modelUrl);
+    const object = useNodeSelector(scene, selector);
+
+    useSetForwardedRef<Object3D>(ref, object);
+
+    return object ? (
+      <>
+        <primitive object={object} dispose={null} />
+        <GraphAnchor root={object} selector={subgraphSelector}>
+          {children}
+        </GraphAnchor>
+      </>
+    ) : null;
+  }
+);
