@@ -1,5 +1,6 @@
-import { FC, createContext, useContext } from 'react';
+import { FC, ReactNode, createContext, useContext } from 'react';
 
+import { HandJointsContext } from './HandSync';
 import { HandState, Handedness, HandsRootContext } from './HandsRoot';
 
 function useHandByHandedness(handedness: Handedness): HandState | null {
@@ -8,7 +9,7 @@ function useHandByHandedness(handedness: Handedness): HandState | null {
   if (hands['0']?.handedness === handedness) {
     return hands['0'];
   } else if (hands['1']?.handedness === handedness) {
-    return hands['0'];
+    return hands['1'];
   } else return null;
 }
 
@@ -16,6 +17,7 @@ export const HandStateContext = createContext<HandState | null>(null);
 
 export const HandBase: FC<{
   handedness: Handedness;
+  children?: ReactNode;
 }> = ({ handedness, children }) => {
   const handState = useHandByHandedness(handedness);
 
@@ -23,7 +25,9 @@ export const HandBase: FC<{
 
   return (
     <HandStateContext.Provider value={handState}>
-      {children}
+      <HandJointsContext.Provider value={handState.inputGroup.joints}>
+        {children}
+      </HandJointsContext.Provider>
     </HandStateContext.Provider>
   );
 };

@@ -1,6 +1,7 @@
 import { useGLTF } from '@react-three/drei';
-import { ForwardedRef, ReactNode, forwardRef, useEffect } from 'react';
+import { ForwardedRef, ReactNode, forwardRef, useEffect, useMemo } from 'react';
 import { Object3D } from 'three';
+import { SkeletonUtils } from 'three-stdlib';
 
 import { GraphAnchor } from './scene-graph/GraphAnchor';
 import { NodeSelector, useNodeSelector } from './scene-graph/use-node-selector';
@@ -26,7 +27,8 @@ function useSetForwardedRef<T>(forwardedRef: ForwardedRef<T>, value: T | null) {
 
 export const ModelGLTF = forwardRef<Object3D, ModelGLTFProps>(
   ({ modelUrl, selector, subgraphSelector, children }, ref) => {
-    const { scene } = useGLTF(modelUrl);
+    const gltf = useGLTF(modelUrl);
+    const scene = useMemo(() => SkeletonUtils.clone(gltf.scene), [gltf]);
     const object = useNodeSelector(scene, selector);
 
     useSetForwardedRef<Object3D>(ref, object);

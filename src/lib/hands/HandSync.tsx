@@ -1,20 +1,22 @@
+import { useFrame } from '@react-three/fiber';
 import { FC, createContext, useContext } from 'react';
-import { useFrame } from 'react-three-fiber';
+import { XRHandJoints } from 'three';
 
-import { HandStateContext } from './HandBase';
-import { InputJointSet } from './HandsRoot';
+export const HandJointsContext = createContext<Partial<XRHandJoints> | null>(
+  {}
+);
 
-export type SetJointsFunction = (inputJoints: InputJointSet) => void;
+export type SetJointsFunction = (inputJoints: Partial<XRHandJoints>) => void;
 
 export const SetJointsContext = createContext<SetJointsFunction | null>(null);
 
 export const HandSync: FC<{}> = () => {
-  const handState = useContext(HandStateContext);
+  const handJoints = useContext(HandJointsContext);
   const setJoints = useContext(SetJointsContext);
 
   useFrame(() => {
-    if (handState?.inputGroup) {
-      setJoints?.(handState.inputGroup.joints);
+    if (handJoints) {
+      setJoints?.(handJoints);
     }
   });
 

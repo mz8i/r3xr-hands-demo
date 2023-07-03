@@ -3,14 +3,18 @@
  * Creates a context for accessing hands by handedness, index etc
  */
 
-import { FC, createContext, useEffect, useMemo, useState } from 'react';
-import { useThree } from 'react-three-fiber';
-import { Group } from 'three';
+import { useThree } from '@react-three/fiber';
+import {
+  FC,
+  ReactNode,
+  createContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { Group, XRHandSpace } from 'three';
 
-import { HandJointKey } from './joints';
-
-export type InputJointSet = Record<HandJointKey, Group>;
-export type HandGroup = Group & { joints: InputJointSet };
+// export type XRHandSpace = Group & { joints: InputJointSet };
 
 export type HandIndex = 0 | 1;
 export type Handedness = 'left' | 'right';
@@ -18,15 +22,15 @@ export type Handedness = 'left' | 'right';
 export type HandConnectionStatus = 'absent' | 'connected' | 'disconnected';
 
 export interface HandState {
-  inputGroup: HandGroup;
+  inputGroup: XRHandSpace;
   handedness: Handedness;
   connectionStatus: HandConnectionStatus;
 }
 
 function useHandByIndex(index: HandIndex): HandState | null {
   const { gl } = useThree();
-  const inputHand = useMemo<HandGroup>(
-    () => gl.xr.getHand(index) as HandGroup,
+  const inputHand = useMemo<XRHandSpace>(
+    () => gl.xr.getHand(index),
     [gl, index]
   );
   const [handedness, setHandedness] = useState<Handedness>();
@@ -77,7 +81,7 @@ export const HandsRootContext = createContext<HandsContextValue>({
   },
 });
 
-export const HandsRoot: FC = ({ children }) => {
+export const HandsRoot: FC<{ children: ReactNode }> = ({ children }) => {
   const hand0 = useHandByIndex(0);
   const hand1 = useHandByIndex(1);
 

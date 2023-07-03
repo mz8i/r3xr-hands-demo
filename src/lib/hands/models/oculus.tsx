@@ -1,4 +1,4 @@
-import {
+import React, {
   FC,
   ReactNode,
   forwardRef,
@@ -7,12 +7,12 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Object3D, Skeleton, SkinnedMesh } from 'three';
+import { Object3D, Skeleton, SkinnedMesh, XRHandJoints } from 'three';
 
-import { ModelGLTF } from '../../../ModelGLTF';
+import { ModelGLTF } from '../../ModelGLTF';
 import { HandStateContext } from '../HandBase';
 import { HandSync, SetJointsContext } from '../HandSync';
-import { Handedness, InputJointSet } from '../HandsRoot';
+import { Handedness } from '../HandsRoot';
 import { xrHandJointNames } from '../joints';
 
 export const OculusHandGLTF = forwardRef<
@@ -47,6 +47,7 @@ function getSkeletonFromModel(model: Object3D | null): Skeleton | undefined {
 
 interface OculusHandModelProps {
   handedness: 'left' | 'right';
+  children?: ReactNode;
 }
 
 export const OculusHandModel: React.FC<OculusHandModelProps> = ({
@@ -58,7 +59,7 @@ export const OculusHandModel: React.FC<OculusHandModelProps> = ({
   );
 
   const setJoints = useCallback(
-    (inputJoints: InputJointSet) => {
+    (inputJoints: Partial<XRHandJoints>) => {
       if (!inputJoints || !skeleton) return;
 
       for (const jointName of xrHandJointNames) {
@@ -84,7 +85,9 @@ export const OculusHandModel: React.FC<OculusHandModelProps> = ({
   );
 };
 
-export const AutoOculusHandModel: FC = ({ children }) => {
+export const AutoOculusHandModel: FC<{ children?: ReactNode }> = ({
+  children,
+}) => {
   const handState = useContext(HandStateContext);
 
   if (!handState) return null;

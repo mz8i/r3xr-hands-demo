@@ -1,126 +1,116 @@
 import {
   Box,
-  MeshDistortMaterial,
+  Edges,
+  MeshWobbleMaterial,
   OrbitControls,
   Stars,
+  Text,
 } from '@react-three/drei';
-import { XR } from '@react-three/xr';
-import { FC } from 'react';
+import { VRButton, XR } from '@react-three/xr';
 
 import './App.css';
 
-import { Canvas } from 'react-three-fiber';
+import { Canvas } from '@react-three/fiber';
+import { Flex, Box as FlexBox, FlexProps } from '@react-three/flex';
+import { useState } from 'react';
 
-import { Rotating } from './Rotating';
-import { HandBase } from './lib/hands/HandBase';
 import { HandsRoot } from './lib/hands/HandsRoot';
-import { AutoOculusHandModel } from './lib/hands/models/oculus';
-import { SelfTransform } from './scene-graph/SelfTransform';
-import { SubGraph } from './scene-graph/SubGraph';
+import { AcidHands } from './scenes/AcidHands';
+import { HandOnBox } from './scenes/HandOnBox';
+import { SwappedHands } from './scenes/SwappedHands';
+import { WallOfHands } from './scenes/WallOfHands';
 
-const CustomSkinnedMesh: FC<{}> = ({ children }) => {
-  return (
-    <SubGraph selector={(r) => r?.getObjectByProperty('type', 'SkinnedMesh')}>
-      <SelfTransform
-        transform={(o) => {
-          o.frustumCulled = false;
-          o.castShadow = true;
-          o.receiveShadow = true;
-        }}
-      />
-      {children}
-    </SubGraph>
-  );
-};
+const examples = [
+  {
+    id: 'acid',
+    name: 'Acid Hands',
+    component: AcidHands,
+  },
+  {
+    id: 'box',
+    name: 'Hands on a Box',
+    component: HandOnBox,
+  },
+  {
+    id: 'swapped',
+    name: 'Swapped Hands',
+    component: SwappedHands,
+  },
+  {
+    id: 'wall',
+    name: 'Wall of Hands',
+    component: WallOfHands,
+  },
+];
 
-function AcidHands() {
+function ExampleSelection({
+  selected,
+  onSelect,
+  ...otherProps
+}: {
+  selected: string;
+  onSelect: (x: string) => void;
+} & Partial<FlexProps>) {
   return (
-    <>
-      <HandBase handedness="left">
-        <AutoOculusHandModel>
-          <CustomSkinnedMesh>
-            <MeshDistortMaterial
-              color="blue"
-              skinning={true}
-              speed={0.9}
-              distort={0.7}
-            />
-          </CustomSkinnedMesh>
-        </AutoOculusHandModel>
-      </HandBase>
-      <HandBase handedness="right">
-        <AutoOculusHandModel>
-          <CustomSkinnedMesh>
-            <MeshDistortMaterial
-              color="red"
-              skinning={true}
-              speed={0.4}
-              distort={0.95}
-            />
-          </CustomSkinnedMesh>
-        </AutoOculusHandModel>
-      </HandBase>
-    </>
-  );
-}
-
-function HandOnTheTable() {
-  return (
-    <>
-      <HandBase handedness="right">
-        <AutoOculusHandModel />
-        <Box position={[0, 1, -3]}>
-          <meshPhongMaterial color="blue" />
-        </Box>
-        <group position={[0, 2, -3]}>{/* TODO */}</group>
-      </HandBase>
-    </>
+    <group {...otherProps}>
+      <Flex
+        dir="row"
+        justifyContent="center"
+        alignItems="center"
+        position-x={-0.4}
+      >
+        {examples.map((e) => {
+          const sel = e.id === selected;
+          return (
+            <FlexBox centerAnchor marginRight={0.4}>
+              <Flex>
+                <FlexBox>
+                  <Box onClick={() => onSelect(e.id)} scale={[0.3, 0.3, 0.3]}>
+                    <MeshWobbleMaterial
+                      color={sel ? 'yellow' : 'skyblue'}
+                      speed={30}
+                      factor={sel ? 0.06 : 0}
+                    />
+                    {sel && <Edges scale={1.1} color="white"></Edges>}
+                  </Box>
+                </FlexBox>
+                <FlexBox>
+                  <Text scale={1.2}>{e.name}</Text>
+                </FlexBox>
+              </Flex>
+            </FlexBox>
+          );
+        })}
+      </Flex>
+    </group>
   );
 }
 
 function App() {
+  const [example, setExample] = useState('acid');
+
+  const ExampleComponent = examples.find((x) => x.id === example)?.component;
+
   return (
     <div className="App">
       <main className="App-body">
+        <VRButton />
         <Canvas id="vr">
           <XR>
             <HandsRoot>
               <Stars />
-
-              {/* <HandBase handedness="right">
-                <Suspense fallback={null}>
-                  <group position={[0.5, 2, -3]}>
-                    <OculusHandModel handedness="right">
-                      <CustomSkinnedMesh>
-                        <meshPhongMaterial color="red" />
-                      </CustomSkinnedMesh>
-                    </OculusHandModel>
-                  </group>
-                </Suspense>
-              </HandBase> */}
-              {/* <group position={[-0.5, 2, -3]} rotation={[-Math.PI / 2, 0, 0]}>
-                <OculusHandModel handedness="left">
-                  <CustomSkinnedMesh>
-                    <meshPhongMaterial color="blue" />
-                  </CustomSkinnedMesh>
-                </OculusHandModel>
-              </group> */}
-              <AcidHands />
-              {/* <SwappedHands /> */}
-
+              <ExampleSelection
+                selected={example}
+                onSelect={setExample}
+                position={[0, 0, -2]}
+              />
+              {ExampleComponent && <ExampleComponent />}
               <ambientLight name="main-ambient-light" intensity={0.3} />
               <pointLight
                 name="main-point-light"
                 intensity={1.5}
                 position={[-5, -2, -2]}
               />
-              <group position={[0, 1, -5]} scale={[0.2, 0.2, 0.2]}>
-                <Rotating>
-                  <Box name="cube" scale={[2, 2, 2]}>
-                    <meshStandardMaterial color="yellow" />
-                  </Box>
-                </Rotating>
-              </group>
               <OrbitControls target={[0, 1, -5]} />
             </HandsRoot>
           </XR>
